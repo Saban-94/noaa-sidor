@@ -14,7 +14,6 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Order, Driver, Customer, Reminder } from '../types';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 interface FirestoreErrorInfo {
   error: string;
   operationType: 'create' | 'update' | 'delete' | 'list' | 'get' | 'write';
@@ -72,26 +71,46 @@ const sanitizeForVoice = (text: string): string => {
     .replace(/\s+/g, ' ') // ניקוי רווחים כפולים
     .trim();
 };
+// 1. תיקון שם החבילה
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-import { GoogleGenAI } from "@google/genai";
+// 2. פונקציה לשליפת המפתח בצורה בטוחה (Vite standard)
+const getApiKey = () => {
+  return import.meta.env.VITE_GEMINI_API_KEY;
+};
 
-const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY});
-
-// Helper to call Gemini API directly
+// יצירת ה-Instance בתוך פונקציית העזר כדי למנוע קריסה בטעינה אם המפתח חסר
 async function callGeminiApi(payload: { model: string, contents: any[], config?: any }) {
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    throw new Error("מפתח ה-API של Gemini חסר. וודא שהגדרת VITE_GEMINI_API_KEY ב-Vercel.");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+
   try {
-    const response = await ai.models.generateContent({
-      model: payload.model === "gemini-1.5-flash" ? "gemini-3-flash-preview" : payload.model,
+    // מיפוי מודלים - שים לב לפורמט השמות הרשמי
+    const modelId = payload.model === "gemini-1.5-flash" ? "gemini-1.5-flash" : payload.model;
+    const model = genAI.getGenerativeModel({ model: modelId });
+
+    const response = await model.generateContent({
       contents: payload.contents,
-      config: payload.config
+      generationConfig: payload.config
     });
     
-    return response;
+    return response.response;
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    if (error.message?.includes("API key not valid")) {
-      throw new Error("מפתח ה-API של Gemini אינו תקין. אנא בדוק את ההגדרות.");
+    
+    if (error.message?.includes("API key not valid") || error.message?.includes("403")) {
+      throw new Error("מפתח ה-API של Gemini אינו תקין. אנא בדוק את ההגדרות ב-Vercel.");
     }
+    
+    if (error.message?.includes("429")) {
+      throw new Error("חרגת ממכסת הבקשות (Quota). נועה צריכה רגע לנוח.");
+    }
+
     throw error;
   }
 }
