@@ -79,38 +79,29 @@ const getApiKey = () => {
   return import.meta.env.VITE_GEMINI_API_KEY;
 };
 
-// יצירת ה-Instance בתוך פונקציית העזר כדי למנוע קריסה בטעינה אם המפתח חסר
-async function callGeminiApi(payload: { model: string, contents: any[], config?: any }) {
-  const apiKey = getApiKey();
-  
-  if (!apiKey) {
-    throw new Error("מפתח ה-API של Gemini חסר. וודא שהגדרת VITE_GEMINI_API_KEY ב-Vercel.");
-  }
+async function callGeminiApi(payload: { model: string, contents: any[], config?: any, systemInstruction?: string, tools?: any }) {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) throw new Error("מפתח API חסר");
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
   try {
-    // מיפוי מודלים - שים לב לפורמט השמות הרשמי
-    const modelId = payload.model === "gemini-1.5-flash" ? "gemini-1.5-flash" : payload.model;
-    const model = genAI.getGenerativeModel({ model: modelId });
+    // התיקון: systemInstruction ו-tools עוברים כאן, לא בתוך config
+    const model = genAI.getGenerativeModel({ 
+      model: payload.model === "gemini-3-flash-preview" ? "gemini-1.5-flash" : payload.model,
+      systemInstruction: payload.systemInstruction, // להעביר מחוץ ל-config
+      tools: payload.tools // להעביר מחוץ ל-config
+    });
 
-    const response = await model.generateContent({
+    // ב-generateContent שולחים רק את ה-contents וה-generationConfig הטהור
+    const result = await model.generateContent({
       contents: payload.contents,
-      generationConfig: payload.config
+      generationConfig: payload.config // כאן נשארים רק פרמטרים כמו temperature, topP וכו'
     });
     
-    return response.response;
+    return result.response;
   } catch (error: any) {
     console.error("Gemini Error:", error);
-    
-    if (error.message?.includes("API key not valid") || error.message?.includes("403")) {
-      throw new Error("מפתח ה-API של Gemini אינו תקין. אנא בדוק את ההגדרות ב-Vercel.");
-    }
-    
-    if (error.message?.includes("429")) {
-      throw new Error("חרגת ממכסת הבקשות (Quota). נועה צריכה רגע לנוח.");
-    }
-
     throw error;
   }
 }
