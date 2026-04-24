@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "Order": {
+      "title": "Order",
+      "description": "A logistics delivery order for H. Saban",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "description": "Delivery date (YYYY-MM-DD)" },
+        "time": { "type": "string", "description": "Delivery time (HH:mm)" },
+        "driverId": { "type": "string", "description": "ID or name of the driver assigned" },
+        "customerName": { "type": "string" },
+        "orderNumber": { "type": "string", "description": "Order/Lead ID (מס' נתור)" },
+        "destination": { "type": "string" },
+        "items": { "type": "string", "description": "Comma separated items and quantities" },
+        "warehouse": { "type": "string", "enum": ["החרש", "התלמיד"] },
+        "status": { "type": "string", "enum": ["pending", "preparing", "ready", "delivered", "cancelled"] },
+        "eta": { "type": "string", "description": "Estimated Time of Arrival (HH:mm)" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["date", "time", "driverId", "customerName", "destination", "items", "warehouse", "status", "createdAt", "updatedAt", "createdBy"]
+    },
+    "MorningReport": {
+      "title": "Morning Report",
+      "description": "Daily logistics summary report sent to drivers/management",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "orderIds": { "type": "array", "items": { "type": "string" } },
+        "reportText": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "orderIds", "reportText", "createdAt"]
+    },
+    "InventoryRule": {
+      "title": "Inventory Rule",
+      "description": "Rules for specific items (e.g. minimum quantity)",
+      "type": "object",
+      "properties": {
+        "itemName": { "type": "string" },
+        "minQuantity": { "type": "number" },
+        "depositRequired": { "type": "boolean" },
+        "depositThreshold": { "type": "number" },
+        "description": { "type": "string" }
+      },
+      "required": ["itemName"]
+    },
+    "Driver": {
+      "title": "Driver",
+      "description": "A logistics driver profile for H. Saban",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "vehicleType": { "type": "string", "enum": ["truck", "crane"] },
+        "plateNumber": { "type": "string" },
+        "vehicleModel": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "off_duty"] },
+        "totalDeliveries": { "type": "number" },
+        "onTimeRate": { "type": "number" },
+        "rating": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone", "vehicleType", "status", "createdAt", "updatedAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "A customer profile in SabanOS",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "customerNumber": { "type": "string" },
+        "contactPerson": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "driveFolderId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "customerNumber", "createdAt", "updatedAt"]
+    },
+    "Reminder": {
+      "title": "Reminder",
+      "description": "A reminder or task in the system",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "dueDate": { "type": "string", "description": "YYYY-MM-DD" },
+        "dueTime": { "type": "string", "description": "HH:mm" },
+        "isCompleted": { "type": "boolean" },
+        "orderId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "dueDate", "dueTime", "isCompleted", "userId", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of logistics orders"
+    },
+    "/morning_reports/{reportId}": {
+      "schema": "MorningReport",
+      "description": "Daily logistics summary reports"
+    },
+    "/inventoryRules/{ruleId}": {
+      "schema": "InventoryRule",
+      "description": "Item-specific business logic rules"
+    },
+    "/drivers/{driverId}": {
+      "schema": "Driver",
+      "description": "Collection of driver profiles"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer profiles and drive folder links"
+    },
+    "/reminders/{reminderId}": {
+      "schema": "Reminder",
+      "description": "System reminders and tasks"
+    },
+    "/users/{userId}/messages/{messageId}": {
+      "schema": "object",
+      "description": "Private chat history for a user"
+    }
+  }
+}

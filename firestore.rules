@@ -1,0 +1,159 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Hardened Global Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(data) {
+      return isSignedIn() && data.createdBy == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isEmailVerified() && (request.auth.token.email == 'hsaban2025@gmail.com');
+    }
+
+    // --- Entity Validations ---
+
+    function isValidOrder(data) {
+      let requiredFields = ['date', 'time', 'driverId', 'customerName', 'destination', 'items', 'warehouse', 'status', 'createdAt', 'updatedAt', 'createdBy'];
+      return data.keys().hasAll(requiredFields)
+        && data.date is string && data.date.size() <= 10
+        && data.time is string && data.time.size() <= 6
+        && data.driverId is string && data.driverId.size() <= 128
+        && data.customerName is string && data.customerName.size() <= 256
+        && data.destination is string && data.destination.size() <= 512
+        && data.items is string && data.items.size() <= 2048
+        && data.warehouse in ['החרש', 'התלמיד']
+        && data.status in ['pending', 'preparing', 'ready', 'delivered', 'cancelled']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.createdBy is string && data.createdBy.size() <= 128
+        && (!data.keys().contains('orderNumber') || (data.orderNumber is string && data.orderNumber.size() <= 128))
+        && (!data.keys().contains('eta') || (data.eta is string && data.eta.size() <= 10))
+        && (!data.keys().contains('orderFormId') || (data.orderFormId is string && data.orderFormId.size() <= 128))
+        && (!data.keys().contains('deliveryNoteId') || (data.deliveryNoteId is string && data.deliveryNoteId.size() <= 128));
+    }
+
+    match /orders/{orderId} {
+      allow list: if isSignedIn(); // Basic list - better to filter by date or owner in client
+      allow get: if isSignedIn() && isValidId(orderId);
+      
+      allow create: if isEmailVerified() 
+        && isValidId(orderId) 
+        && isValidOrder(incoming()) 
+        && incoming().createdBy == request.auth.uid 
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+        
+      allow update: if isEmailVerified() 
+        && isValidId(orderId)
+        && isValidOrder(incoming())
+        && incoming().updatedAt == request.time
+        && incoming().createdAt == existing().createdAt
+        && incoming().createdBy == existing().createdBy
+        && (
+          isAdmin() ||
+          (isOwner(existing()) && incoming().diff(existing()).affectedKeys().hasAll(['updatedAt'])) ||
+          (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'eta', 'updatedAt']))
+        );
+        
+      allow delete: if isEmailVerified() && (isOwner(existing()) || isAdmin());
+    }
+
+    function isValidDriver(data) {
+      return data.keys().hasAll(['name', 'phone', 'vehicleType', 'status', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() <= 128
+        && data.phone is string && data.phone.size() <= 20
+        && data.vehicleType in ['truck', 'crane']
+        && data.status in ['active', 'off_duty']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /drivers/{driverId} {
+      allow read: if isSignedIn() && isValidId(driverId);
+      allow list: if isSignedIn();
+      allow create: if isEmailVerified() && isValidId(driverId) && isValidDriver(incoming()) && incoming().createdAt == request.time;
+      allow update: if isEmailVerified() && isValidId(driverId) && isValidDriver(incoming()) && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    function isValidCustomer(data) {
+      return data.keys().hasAll(['name', 'customerNumber', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() <= 128
+        && data.customerNumber is string && data.customerNumber.size() <= 64;
+    }
+
+    match /customers/{customerId} {
+      allow read: if isSignedIn() && isValidId(customerId);
+      allow list: if isSignedIn();
+      allow create: if isEmailVerified() && isValidId(customerId) && isValidCustomer(incoming()) && incoming().createdAt == request.time;
+      allow update: if isEmailVerified() && isValidId(customerId) && isValidCustomer(incoming()) && incoming().updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    function isValidReminder(data) {
+      return data.keys().hasAll(['title', 'dueDate', 'dueTime', 'isCompleted', 'userId', 'createdAt', 'updatedAt'])
+        && data.title is string && data.title.size() <= 256
+        && data.dueDate is string && data.dueDate.size() <= 10
+        && data.dueTime is string && data.dueTime.size() <= 10
+        && data.isCompleted is bool
+        && data.userId == request.auth.uid
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /reminders/{reminderId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(reminderId) && resource.data.userId == request.auth.uid;
+      allow create: if isEmailVerified() && isValidId(reminderId) && isValidReminder(incoming()) && incoming().createdAt == request.time;
+      allow update: if isEmailVerified() && isValidId(reminderId) && isValidReminder(incoming()) && resource.data.userId == request.auth.uid && incoming().updatedAt == request.time;
+      allow delete: if isEmailVerified() && isValidId(reminderId) && resource.data.userId == request.auth.uid;
+    }
+
+    match /users/{userId}/messages/{messageId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId && isValidId(messageId);
+    }
+
+    // Inventory and other collections
+    match /inventory/{itemId} {
+      allow read: if isSignedIn();
+      allow write: if isEmailVerified() && (isAdmin() || isOwner(existing())); 
+    }
+    
+    match /sales/{saleId} {
+      allow read: if isSignedIn() && isAdmin();
+      allow create: if isEmailVerified() && incoming().createdAt == request.time;
+      allow update, delete: if isAdmin();
+    }
+    
+    match /morning_reports/{reportId} {
+      allow read: if isSignedIn();
+      allow create: if isEmailVerified() && incoming().createdAt == request.time;
+    }
+  }
+}
