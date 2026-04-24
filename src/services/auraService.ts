@@ -75,35 +75,25 @@ const sanitizeForVoice = (text: string): string => {
 
 import { GoogleGenAI } from "@google/genai";
 
-// Helper to call Gemini API via server proxy
-async function generateContentProxy(payload: { model: string, contents: any[], config?: any }) {
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// Helper to call Gemini API directly
+async function callGeminiApi(payload: { model: string, contents: any[], config?: any }) {
   try {
-    const response = await fetch("/api/ai/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...payload,
-        model: payload.model === "gemini-3-flash-preview" ? "gemini-1.5-flash" : payload.model
-      }),
+    const response = await ai.models.generateContent({
+      model: payload.model === "gemini-1.5-flash" ? "gemini-3-flash-preview" : payload.model,
+      contents: payload.contents,
+      config: payload.config
     });
     
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.error || `AI generation failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+    return response;
   } catch (error: any) {
-    console.error("Gemini Proxy Error:", error);
-    if (error.message?.includes("not configured on the server")) {
-      throw new Error("מפתח ה-API של Gemini אינו מוגדר בשרת. אנא וודא שהגדרת את ה-GEMINI_API_KEY בהגדרות המערכת.");
+    console.error("Gemini Error:", error);
+    if (error.message?.includes("API key not valid")) {
+      throw new Error("מפתח ה-API של Gemini אינו תקין. אנא בדוק את ההגדרות.");
     }
     throw error;
   }
-}
-
-async function callGeminiApi(payload: any) {
-  return generateContentProxy(payload);
 }
 
 export const INVENTORY_RULES = [];
@@ -776,8 +766,8 @@ async function processNoaTurn(contents: any[], userKey?: string): Promise<any> {
     dynamicInstruction += `\n המשתמש הנוכחי שאת מדברת איתו הוא: ${userKey}. חל איסור מוחלט להציג מידע של משתמשים אחרים!`;
   }
 
-  const response = await generateContentProxy({
-    model: "gemini-1.5-flash",
+  const response = await callGeminiApi({
+    model: "gemini-3-flash-preview",
     contents: contents,
     config: {
       systemInstruction: dynamicInstruction,
@@ -785,10 +775,10 @@ async function processNoaTurn(contents: any[], userKey?: string): Promise<any> {
     }
   });
 
-  const functionCalls = (response as any).candidates?.[0]?.content?.parts?.filter((p: any) => p.functionCall).map((p: any) => p.functionCall);
+  const functionCalls = response.functionCalls;
   
   if (functionCalls && functionCalls.length > 0) {
-    const modelResponseContent = (response as any).candidates[0].content;
+    const modelResponseContent = response.candidates[0].content;
     const functionResponseParts: any[] = [];
 
     for (const call of functionCalls) {
@@ -879,8 +869,8 @@ async function processNoaTurn(contents: any[], userKey?: string): Promise<any> {
 
 החזר JSON בלבד.`;
             
-            const analysisResponse = await generateContentProxy({
-              model: "gemini-1.5-flash",
+            const analysisResponse = await callGeminiApi({
+              model: "gemini-3-flash-preview",
               contents: [{
                 role: 'user',
                 parts: [
@@ -1005,8 +995,8 @@ export async function predictOrderEta(order: Order, historicalOrders: Order[] = 
   `;
 
   try {
-    const response = await generateContentProxy({
-      model: "gemini-1.5-flash",
+    const response = await callGeminiApi({
+      model: "gemini-3-flash-preview",
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         tools: [

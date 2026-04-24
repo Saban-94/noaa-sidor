@@ -197,6 +197,7 @@ const DocumentSheet = ({
   onUpload?: (file: File, type: 'orderForm' | 'deliveryNote') => Promise<void>
 }) => {
   const [isUploading, setIsUploading] = useState<'orderForm' | 'deliveryNote' | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const getDriveUrl = (id: string) => id === 'PENDING_SCAN' ? '#' : `https://drive.google.com/file/d/${id}/view`;
   const isPending = (id?: string) => id === 'PENDING_SCAN';
   
@@ -204,8 +205,12 @@ const DocumentSheet = ({
     const file = e.target.files?.[0];
     if (file && onUpload) {
       setIsUploading(type);
+      setUploadError(null);
       try {
         await onUpload(file, type);
+      } catch (err: any) {
+        console.error("Local upload error caught in DocumentSheet:", err);
+        setUploadError(err.message || "נכשלה העלאת הקובץ לשרת");
       } finally {
         setIsUploading(null);
       }
@@ -248,6 +253,27 @@ const DocumentSheet = ({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Error Message if any */}
+          <AnimatePresence>
+            {uploadError && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3"
+              >
+                <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={18} />
+                <div className="flex-1">
+                  <p className="text-xs font-black text-rose-700">שגיאה בהעלאה</p>
+                  <p className="text-[10px] font-bold text-rose-500 mt-0.5">{uploadError}</p>
+                </div>
+                <button onClick={() => setUploadError(null)} className="text-rose-400 hover:text-rose-600">
+                  <X size={14} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Order Details Summary */}
           <div className="p-4 bg-gray-50 rounded-[1.5rem] border border-gray-100 flex flex-col gap-1">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">לקוח</span>
@@ -372,6 +398,7 @@ export const OrderCard = ({
   const [showDocs, setShowDocs] = useState(false);
   const [showItems, setShowItems] = useState(false);
   const [isLocalUploading, setIsLocalUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(false);
 
   const parsedItemsCount = parseItems(order.items).length;
 
@@ -379,8 +406,13 @@ export const OrderCard = ({
     const file = e.target.files?.[0];
     if (file && onUploadDoc) {
       setIsLocalUploading(true);
+      setUploadError(false);
       try {
         await onUploadDoc(file, order.id, 'orderForm');
+      } catch (err) {
+        console.error("Local quick upload error:", err);
+        setUploadError(true);
+        setTimeout(() => setUploadError(false), 3000);
       } finally {
         setIsLocalUploading(false);
       }
@@ -472,12 +504,16 @@ export const OrderCard = ({
               ) : (
                 <label 
                   className={`p-1.5 rounded-full shadow-lg border transition-all cursor-pointer ${
-                    isLocalUploading ? 'bg-sky-50 border-sky-200 text-sky-400' : 'bg-white text-sky-600 border-sky-100 hover:bg-sky-50'
+                    isLocalUploading ? 'bg-sky-50 border-sky-200 text-sky-400' : 
+                    uploadError ? 'bg-rose-50 border-rose-300 text-rose-500 animate-shake' : 
+                    'bg-white text-sky-600 border-sky-100 hover:bg-sky-50'
                   }`}
-                  title="העלאת מסמך מהיר"
+                  title={uploadError ? "שגיאה בהעלאה" : "העלאת מסמך מהיר"}
                 >
                   {isLocalUploading ? (
                     <Loader2 size={14} className="animate-spin" />
+                  ) : uploadError ? (
+                    <AlertCircle size={14} strokeWidth={3} />
                   ) : (
                     <FileUp size={14} strokeWidth={3} />
                   )}

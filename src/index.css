@@ -1,21 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-cockpit-bg: #05070a;
+  --color-cockpit-card: rgba(13, 17, 23, 0.7);
+  --color-cockpit-border: rgba(56, 189, 248, 0.15);
+  --color-cockpit-glow: rgba(56, 189, 248, 0.4);
+  
+  --color-emerald-glow: rgba(16, 185, 129, 0.4);
+  --color-amber-glow: rgba(245, 158, 11, 0.4);
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    background-color: var(--color-cockpit-bg);
   }
 
   body {
-    @apply font-sans bg-gray-50 text-gray-900;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(14, 165, 233, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0px, transparent 50%);
+    @apply font-sans text-slate-200 antialiased;
+    background: 
+      radial-gradient(circle at 0% 0%, rgba(14, 165, 233, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+      var(--color-cockpit-bg);
     background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
@@ -29,36 +40,75 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Ensure scroll-only-vertical for containers that need it */
-  .scroll-v {
-    overflow-y: auto;
-    overflow-x: hidden;
+  .glass-panel {
+    @apply backdrop-blur-xl border border-white/5;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
 
-  /* Responsive containers for tables or wide items */
-  .responsive-container {
-    @apply w-full overflow-x-auto;
-    -webkit-overflow-scrolling: touch;
+  .cockpit-card {
+    @apply rounded-2xl border border-sky-400/10 bg-slate-900/40 backdrop-blur-md overflow-hidden;
+    box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.02);
   }
 
-  .shimmer-anim {
-    background: linear-gradient(
-      90deg,
-      rgba(14, 165, 233, 0) 0%,
-      rgba(14, 165, 233, 0.1) 50%,
-      rgba(14, 165, 233, 0) 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer-effect 2s infinite linear;
+  .status-glow-green {
+    box-shadow: 0 0 15px var(--color-emerald-glow);
   }
 
-  @keyframes shimmer-effect {
-    from { background-position: 200% 0; }
-    to { background-position: -200% 0; }
+  .status-glow-amber {
+    box-shadow: 0 0 15px var(--color-amber-glow);
+    animation: pulse-glow 2s infinite ease-in-out;
+  }
+
+  .status-glow-sky {
+    box-shadow: 0 0 15px var(--color-cockpit-glow);
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
+  }
+
+  .light-stroke {
+    @apply border-b border-sky-400/10;
+  }
+
+  /* Custom Scrollbar for Cockpit */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.1);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.2);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.4);
+  }
+  .cockpit-popup .leaflet-popup-content-wrapper {
+    @apply bg-slate-900/90 backdrop-blur-md border border-sky-400/20 text-white rounded-xl;
+  }
+  .cockpit-popup .leaflet-popup-tip {
+    @apply bg-slate-900/90;
+  }
+  .leaflet-container {
+    @apply !bg-slate-950;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  .animate-shake {
+    animation: shake 0.2s ease-in-out 0s 2;
   }
 }
 
-/* Custom RTL scrollbar or other tweaks if needed */
-[dir="rtl"] .font-sans {
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+/* RTL Adjustments */
+[dir="rtl"] {
+  direction: rtl;
 }
