@@ -117,53 +117,58 @@ const Header = ({
   isUploading?: boolean,
   onOpenReminders: () => void
 }) => (
-  <header className="flex items-center justify-between px-6 py-4 glass-panel sticky top-0 z-40 light-stroke">
+  <header className="flex items-center justify-between px-6 py-4 glass-panel sticky top-0 z-40 light-stroke mb-8">
     <div className="flex items-center gap-4">
       <button 
         onClick={onOpenSidebar}
-        className="p-2 hover:bg-sky-400/10 rounded-xl text-sky-400 md:hidden"
+        className="p-2 hover:bg-white/10 rounded-xl text-sky-400 md:hidden transition-colors"
       >
         <Menu size={24} />
       </button>
       <div className="flex items-center gap-3">
-        <div className="bg-sky-500/20 p-2 rounded-xl border border-sky-500/20 shadow-[0_0_15px_rgba(14,165,233,0.2)]">
+        <div className="bg-sky-500/20 p-2 rounded-xl border border-sky-400/20 shadow-[0_0_20px_rgba(14,165,233,0.3)]">
           <Truck className="text-sky-400" size={24} />
         </div>
         <div className="hidden sm:block">
-          <h1 className="text-lg font-black text-white leading-tight tracking-tighter uppercase font-mono">SabanOS 2.0</h1>
-          <p className="text-[10px] text-sky-400/70 font-bold uppercase tracking-widest">Operator: {user.displayName?.split(' ')[0] || 'RAAMI'}</p>
+          <h1 className="text-lg font-black text-white leading-tight tracking-[0.2em] uppercase font-mono">SabanOS</h1>
+          <p className="text-[9px] text-sky-400/70 font-black uppercase tracking-[0.3em] mt-0.5">Fleet Core: Ready</p>
         </div>
       </div>
     </div>
     
-    <div className="flex items-center gap-3">
-      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-slate-900/50 rounded-full border border-sky-400/10 mr-4">
-        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">System Online</span>
+    <div className="flex items-center gap-4">
+      <div className="hidden lg:flex items-center gap-2.5 px-4 py-1.5 bg-white/5 rounded-full border border-white/10">
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.6)]" />
+        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest italic">Operational</span>
       </div>
 
-      <button 
-        onClick={onOpenReminders}
-        className="p-2.5 rounded-xl bg-slate-800/40 text-sky-400 border border-sky-400/10 hover:bg-sky-400/20 transition-all relative"
-      >
-        <ListTodo size={20} />
-      </button>
+      <div className="flex items-center gap-2">
+        <button 
+          onClick={onOpenReminders}
+          className="p-2.5 rounded-xl bg-white/5 text-sky-400 border border-white/10 hover:bg-white/10 transition-all active:scale-95 shadow-lg"
+        >
+          <ListTodo size={20} />
+        </button>
 
-      <button 
-        onClick={onToggleNotifications}
-        className={`p-2.5 rounded-xl transition-all border ${notificationsEnabled ? 'bg-sky-500/20 text-sky-400 border-sky-400/30 shadow-[0_0_10px_rgba(14,165,233,0.3)]' : 'bg-slate-800/40 text-slate-500 border-slate-700'}`}
-      >
-        {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
-      </button>
+        <button 
+          onClick={onToggleNotifications}
+          className={`p-2.5 rounded-xl transition-all border shadow-lg active:scale-95 ${notificationsEnabled ? 'bg-sky-500/20 text-sky-400 border-sky-400/30 shadow-[0_0_10px_rgba(14,165,233,0.3)]' : 'bg-white/5 text-slate-500 border-white/10 opacity-70'}`}
+        >
+          {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
+        </button>
+      </div>
 
-      <div className="h-8 w-[1px] bg-sky-400/10 mx-2 hidden sm:block" />
+      <div className="h-8 w-[1px] bg-white/10 mx-1 hidden sm:block" />
 
-      <div className="flex items-center gap-3 pl-2">
+      <div className="flex items-center gap-4">
         <div className="hidden md:flex flex-col items-end">
-          <span className="text-xs font-black text-white uppercase">{user.displayName}</span>
-          <button onClick={logout} className="text-[10px] font-bold text-red-400/70 hover:text-red-400 transition-colors uppercase tracking-tight">Disconnect</button>
+          <span className="text-xs font-black text-white uppercase tracking-tighter italic">{user.displayName}</span>
+          <button onClick={logout} className="text-[9px] font-bold text-rose-400/70 hover:text-red-400 transition-colors uppercase tracking-[0.1em]">Disconnect</button>
         </div>
-        <img src={user.photoURL || ''} alt="" className="w-10 h-10 rounded-full border border-sky-400/30 shadow-[0_0_10px_rgba(14,165,233,0.2)]" referrerPolicy="no-referrer" />
+        <div className="relative group">
+          <div className="absolute inset-0 bg-sky-400 rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity" />
+          <img src={user.photoURL || ''} alt="" className="w-10 h-10 rounded-full border border-white/20 relative z-10 shadow-xl" referrerPolicy="no-referrer" />
+        </div>
       </div>
     </div>
   </header>
@@ -175,31 +180,33 @@ const DashboardGauges = ({ orders, drivers }: { orders: Order[], drivers: Driver
   const activeDrivers = drivers.filter(d => d.status === 'active').length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 px-6">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="cockpit-card p-6 border-sky-400/20 bg-gradient-to-br from-sky-950/20 to-slate-900/40 relative group overflow-hidden"
+        className="cockpit-card p-8 border-sky-400/20 bg-gradient-to-br from-sky-950/40 to-slate-900/60 relative group"
       >
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-sky-400 uppercase tracking-widest">Active Fleet Status</span>
-            <Truck size={16} className="text-sky-400" />
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-[11px] font-black text-sky-400 uppercase tracking-[0.2em] italic">Fleet Engagement</span>
+            <div className="p-2 bg-sky-400/10 rounded-lg border border-sky-400/10">
+              <Truck size={18} className="text-sky-400" />
+            </div>
           </div>
           <div className="flex items-end gap-3">
-            <h3 className="text-4xl font-black text-white font-mono">{activeDrivers}</h3>
-            <span className="text-xs font-bold text-sky-400/60 pb-1 uppercase">Units in Transit</span>
+            <h3 className="text-5xl font-black text-white font-mono tracking-tighter">{activeDrivers}</h3>
+            <span className="text-xs font-black text-sky-400/60 pb-1.5 uppercase tracking-widest italic">Units Active</span>
           </div>
-          <div className="mt-4 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="mt-6 h-2 bg-slate-950/60 rounded-full overflow-hidden border border-white/5 p-[1px]">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: '75%' }}
-              className="h-full bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.5)]"
+              className="h-full bg-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.6)] rounded-full"
             />
           </div>
         </div>
-        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <Truck size={120} />
+        <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 text-white transform group-hover:scale-110">
+          <Truck size={200} />
         </div>
       </motion.div>
 
@@ -207,25 +214,27 @@ const DashboardGauges = ({ orders, drivers }: { orders: Order[], drivers: Driver
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="cockpit-card p-6 border-emerald-400/20 bg-gradient-to-br from-emerald-950/20 to-slate-900/40 relative group overflow-hidden"
+        className="cockpit-card p-8 border-emerald-400/20 bg-gradient-to-br from-emerald-950/40 to-slate-900/60 relative group"
       >
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Load Logistics</span>
-            <Package size={16} className="text-emerald-400" />
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.2em] italic">Payload Logistics</span>
+            <div className="p-2 bg-emerald-400/10 rounded-lg border border-emerald-400/10">
+              <Package size={18} className="text-emerald-400" />
+            </div>
           </div>
           <div className="flex items-end gap-3">
-            <h3 className="text-4xl font-black text-white font-mono">{activeOrders}</h3>
-            <span className="text-xs font-bold text-emerald-400/60 pb-1 uppercase">Pending Loads</span>
+            <h3 className="text-5xl font-black text-white font-mono tracking-tighter">{activeOrders}</h3>
+            <span className="text-xs font-black text-emerald-400/60 pb-1.5 uppercase tracking-widest italic">Active Loads</span>
           </div>
-          <div className="mt-4 flex gap-1">
+          <div className="mt-6 flex gap-1.5">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className={`h-2 flex-1 rounded-sm ${i < 6 ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-slate-800'}`} />
+              <div key={i} className={`h-2.5 flex-1 rounded-sm border border-white/5 ${i < 6 ? 'bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.5)]' : 'bg-slate-950/60'}`} />
             ))}
           </div>
         </div>
-        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <Package size={120} />
+        <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 text-white transform group-hover:scale-110">
+          <Package size={200} />
         </div>
       </motion.div>
 
@@ -233,27 +242,29 @@ const DashboardGauges = ({ orders, drivers }: { orders: Order[], drivers: Driver
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="cockpit-card p-6 border-amber-400/20 bg-gradient-to-br from-amber-950/20 to-slate-900/40 relative group overflow-hidden"
+        className="cockpit-card p-8 border-amber-400/20 bg-gradient-to-br from-amber-950/40 to-slate-900/60 relative group"
       >
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Readiness Level</span>
-            <CheckCircle size={16} className="text-amber-400" />
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-[11px] font-black text-amber-400 uppercase tracking-[0.2em] italic">Mission Readiness</span>
+            <div className="p-2 bg-amber-400/10 rounded-lg border border-amber-400/10">
+              <CheckCircle size={18} className="text-amber-400" />
+            </div>
           </div>
           <div className="flex items-end gap-3">
-            <h3 className="text-4xl font-black text-white font-mono">{readyOrders}</h3>
-            <span className="text-xs font-bold text-amber-400/60 pb-1 uppercase">Ready for Dispatch</span>
+            <h3 className="text-5xl font-black text-white font-mono tracking-tighter">{readyOrders}</h3>
+            <span className="text-xs font-black text-amber-400/60 pb-1.5 uppercase tracking-widest italic">Ready Units</span>
           </div>
-          <div className="mt-4 flex justify-between items-center text-[10px] font-bold uppercase tracking-tighter">
-            <span className="text-amber-400/60">Efficiency</span>
-            <span className="text-amber-400">92% Optimal</span>
+          <div className="mt-6 flex justify-between items-center text-[10px] font-black uppercase tracking-widest italic">
+            <span className="text-amber-400/60">Efficiency Rating</span>
+            <span className="text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.3)]">92% Optimal</span>
           </div>
-          <div className="mt-2 h-1 bg-slate-800 rounded-full overflow-hidden">
-            <div className="w-[92%] h-full bg-amber-400" />
+          <div className="mt-2.5 h-1.5 bg-slate-950/60 rounded-full overflow-hidden border border-white/5 p-[1px]">
+            <div className="w-[92%] h-full bg-amber-400 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
           </div>
         </div>
-        <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-          <LayoutList size={120} />
+        <div className="absolute -right-8 -bottom-8 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 text-white transform group-hover:scale-110">
+          <LayoutList size={200} />
         </div>
       </motion.div>
     </div>
@@ -297,7 +308,7 @@ const Sidebar = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60]"
+          className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[60]"
         />
         
         {/* Layer 1: Core Navigation */}
@@ -306,10 +317,10 @@ const Sidebar = ({
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed inset-y-0 right-0 w-80 glass-panel z-[70] flex flex-col pt-24 p-6 border-l border-white/10"
+          className="fixed inset-y-0 right-0 w-80 glass-panel z-[70] flex flex-col pt-24 p-8 border-l border-white/10"
           dir="rtl"
         >
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[
               { id: 'reports', label: 'Morning Intel', icon: FileText },
               { id: 'list', label: 'Tactical Overview', icon: LayoutList },
@@ -322,25 +333,25 @@ const Sidebar = ({
               <button
                 key={item.id}
                 onClick={() => { setViewMode(item.id); onClose(); }}
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all border group ${
+                className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] transition-all border group ${
                   viewMode === item.id 
-                    ? 'bg-sky-500/20 border-sky-400/30 text-white shadow-[0_0_15px_rgba(14,165,233,0.3)]' 
-                    : 'text-slate-400 border-transparent hover:bg-white/5 hover:text-sky-400'
+                    ? 'bg-sky-500/20 border-sky-400/30 text-white shadow-[0_0_20px_rgba(14,165,233,0.3)]' 
+                    : 'text-slate-400 border-transparent hover:bg-white/10 hover:text-sky-400'
                 }`}
               >
                 <item.icon size={22} className="group-hover:scale-110 transition-transform" />
-                <span className="font-black uppercase tracking-tighter italic">{item.label}</span>
+                <span className="font-black uppercase tracking-[0.05em] italic text-sm">{item.label}</span>
               </button>
             ))}
           </div>
 
-          <div className="mt-auto pt-6 border-t border-white/5">
+          <div className="mt-auto pt-8 border-t border-white/10">
             <button 
               onClick={() => { onOpenReminders(); onClose(); }}
-              className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-amber-400 hover:bg-amber-400/10 transition-all border border-transparent hover:border-amber-400/20 mb-4"
+              className="w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] text-amber-400 hover:bg-amber-400/10 transition-all border border-transparent hover:border-amber-400/20 mb-4"
             >
               <ListTodo size={22} />
-              <span className="font-black uppercase tracking-tighter italic">Active Briefs</span>
+              <span className="font-black uppercase tracking-[0.05em] italic text-sm">Active Briefs</span>
             </button>
           </div>
         </motion.div>
@@ -350,38 +361,38 @@ const Sidebar = ({
            initial={{ x: '100%' }}
            animate={{ x: 320 }} // Offset by Layer 1 width
            exit={{ x: '100%' }}
-           className="fixed inset-y-0 right-0 w-80 glass-panel z-[65] hidden lg:flex flex-col pt-24 p-6 bg-slate-950/80"
+           className="fixed inset-y-0 right-0 w-80 glass-panel z-[65] hidden lg:flex flex-col pt-24 p-8 bg-slate-950/40"
            dir="rtl"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Team Frequency</h3>
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[9px] font-black text-emerald-500">4 Online</span>
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] italic">Team Frequency</h3>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+              <span className="text-[10px] font-black text-emerald-500 uppercase">Live</span>
             </div>
           </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto">
+          <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
             {drivers.map(driver => (
-              <div key={driver.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors border border-transparent hover:border-white/5">
+              <div key={driver.id} className="flex items-center gap-4 p-4 rounded-[1.25rem] hover:bg-white/5 cursor-pointer transition-all border border-transparent hover:border-white/10 group">
                 <div className="relative">
-                  <img src={driver.avatar} className="w-10 h-10 rounded-full border border-sky-500/20" alt="" />
-                  <div className="absolute -bottom-0.5 -left-0.5 w-3 h-3 bg-emerald-500 border-2 border-slate-900 rounded-full" />
+                  <img src={driver.avatar} className="w-11 h-11 rounded-full border-2 border-sky-500/20 group-hover:border-sky-400/40 transition-colors" alt="" />
+                  <div className="absolute -bottom-0.5 -left-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-950 rounded-full" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center mb-0.5">
-                    <h4 className="text-xs font-black text-white truncate">{driver.name}</h4>
-                    <span className="text-[8px] font-bold text-slate-500">12:45</span>
+                  <div className="flex justify-between items-center mb-1">
+                    <h4 className="text-xs font-black text-white truncate uppercase tracking-tighter italic">{driver.name}</h4>
+                    <span className="text-[9px] font-black text-slate-500">12:45</span>
                   </div>
-                  <p className="text-[10px] text-slate-400 truncate font-medium">המנה של זבולון סופקה בהצלחה ✅</p>
+                  <p className="text-[10px] text-slate-400 truncate font-bold italic tracking-tight opacity-70 group-hover:opacity-100 transition-opacity">Operational update pending...</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-6 pt-6 border-t border-white/5">
-             <button className="w-full bg-slate-800/50 hover:bg-sky-500/20 text-sky-400 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-sky-400/10 transition-all">
-                Join Main Channel
+          <div className="mt-8 pt-8 border-t border-white/10">
+             <button className="w-full glass-button !py-4 text-[10px] tracking-[0.2em]">
+                Secure Channel
              </button>
           </div>
         </motion.div>
@@ -391,7 +402,7 @@ const Sidebar = ({
 );
 
 const MobileNav = ({ viewMode, setViewMode }: { viewMode: string, setViewMode: (v: string) => void }) => (
-  <div className="md:hidden fixed bottom-6 left-6 right-6 h-16 glass-panel flex items-center justify-around px-4 z-50 rounded-2xl border-sky-400/20 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+  <div className="md:hidden fixed bottom-6 left-6 right-6 h-20 glass-panel flex items-center justify-around px-6 z-50 rounded-[2rem] border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
     {[
       { id: 'list', icon: LayoutList },
       { id: 'chat', icon: MessageSquare },
@@ -401,26 +412,28 @@ const MobileNav = ({ viewMode, setViewMode }: { viewMode: string, setViewMode: (
       <button
         key={item.id}
         onClick={() => setViewMode(item.id)}
-        className={`p-3 rounded-xl transition-all ${
-          viewMode === item.id ? 'bg-sky-500 text-white shadow-[0_0_15px_rgba(56,189,248,0.5)]' : 'text-slate-500'
+        className={`p-4 rounded-2xl transition-all active:scale-90 ${
+          viewMode === item.id 
+            ? 'bg-sky-500 text-white shadow-[0_0_25px_rgba(56,189,248,0.6)] border border-sky-400/50' 
+            : 'text-slate-400 hover:text-sky-400'
         }`}
       >
-        <item.icon size={24} />
+        <item.icon size={26} strokeWidth={viewMode === item.id ? 2.5 : 2} />
       </button>
     ))}
   </div>
 );
 
 const VoiceWidget = ({ onVoiceInput }: { onVoiceInput: () => void }) => (
-  <div className="fixed bottom-24 right-6 md:bottom-12 md:right-12 z-50">
+  <div className="fixed bottom-32 right-6 md:bottom-12 md:right-12 z-50">
     <motion.button
-      whileHover={{ scale: 1.1 }}
+      whileHover={{ scale: 1.1, rotate: 5 }}
       whileTap={{ scale: 0.9 }}
       onClick={onVoiceInput}
-      className="w-16 h-16 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(56,189,248,0.6)] border border-sky-400 group relative"
+      className="w-18 h-18 bg-sky-500 text-white rounded-full flex items-center justify-center shadow-[0_0_35px_rgba(56,189,248,0.4)] border-2 border-white/20 group relative backdrop-blur-md"
     >
       <div className="absolute inset-0 bg-sky-400 rounded-full animate-ping opacity-20 pointer-events-none group-hover:block hidden" />
-      <Sparkles size={28} />
+      <Sparkles size={32} />
     </motion.button>
   </div>
 );
@@ -446,67 +459,72 @@ const RemindersSidebar = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[80]"
+          className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl z-[80]"
         />
         <motion.div 
           initial={{ x: '-100%' }}
           animate={{ x: 0 }}
           exit={{ x: '-100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed inset-y-0 left-0 w-80 glass-panel z-[90] flex flex-col p-6 overflow-y-auto"
+          className="fixed inset-y-0 left-0 w-96 glass-panel z-[90] flex flex-col p-10 overflow-y-auto"
           dir="rtl"
         >
-          <div className="flex justify-between items-center mb-10">
-            <div className="flex items-center gap-3">
-              <div className="bg-sky-500/20 p-2 rounded-xl text-sky-400 border border-sky-400/20">
-                <ListTodo size={20} />
+          <div className="flex justify-between items-center mb-12">
+            <div className="flex items-center gap-4">
+              <div className="bg-sky-500/20 p-2.5 rounded-2xl text-sky-400 border border-sky-400/20 shadow-inner">
+                <ListTodo size={24} />
               </div>
-              <h2 className="text-xl font-black text-white italic tracking-tighter uppercase">Reminders</h2>
+              <div>
+                <h2 className="text-2xl font-black text-white italic tracking-widest uppercase">Protocol</h2>
+                <p className="text-[10px] font-black text-sky-400/60 uppercase tracking-[0.2em] mt-1">Status: Active</p>
+              </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-              <X size={24} className="text-slate-500" />
+            <button onClick={onClose} className="p-3 hover:bg-white/10 rounded-2xl transition-all active:scale-90">
+              <X size={28} className="text-slate-500" />
             </button>
           </div>
 
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-6">
             {reminders.length === 0 ? (
-              <div className="text-center py-20">
-                <Sparkles size={40} className="mx-auto text-sky-400/20 mb-4" />
-                <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">No active protocols.</p>
+              <div className="text-center py-24 px-8 bg-white/5 rounded-[2rem] border border-white/5">
+                <Sparkles size={48} className="mx-auto text-sky-400/10 mb-6" />
+                <p className="text-slate-500 font-black uppercase text-[11px] tracking-[0.3em] leading-relaxed">No active protocols initialized.</p>
               </div>
             ) : (
               reminders.map((reminder) => (
                 <div 
                   key={reminder.id}
-                  className={`p-4 rounded-2xl border transition-all ${
-                    reminder.isCompleted ? 'bg-slate-900/40 border-white/5 opacity-40' : 'bg-slate-800/40 border-sky-400/10 shadow-sm'
+                  className={`p-6 rounded-[2rem] border transition-all duration-300 ${
+                    reminder.isCompleted 
+                      ? 'bg-slate-950/20 border-white/5 opacity-40 grayscale scale-[0.98]' 
+                      : 'bg-white/5 border-white/10 shadow-xl hover:border-sky-400/30'
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-start justify-between gap-4">
                     <button 
                       onClick={() => onToggleComplete(reminder.id!, !reminder.isCompleted)}
-                      className={`p-2 rounded-lg transition-all ${
-                        reminder.isCompleted ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-500 hover:bg-sky-500 hover:text-white'
+                      className={`p-3 rounded-xl transition-all shadow-lg active:scale-90 shrink-0 ${
+                        reminder.isCompleted ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400 hover:bg-sky-500 hover:text-white'
                       }`}
                     >
-                      <CheckCircle size={18} />
+                      <CheckCircle size={20} />
                     </button>
-                    <div className="flex-1 mr-3 text-right">
-                      <h4 className={`font-bold text-sm ${reminder.isCompleted ? 'line-through text-slate-500' : 'text-white'}`}>
+                    <div className="flex-1 text-right min-w-0">
+                      <h4 className={`font-black text-base uppercase tracking-tighter italic truncate ${reminder.isCompleted ? 'text-slate-500' : 'text-white'}`}>
                         {reminder.title}
                       </h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Clock size={12} className="text-sky-400" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">{reminder.dueDate} | {reminder.dueTime}</span>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Clock size={14} className="text-sky-400 opacity-60" />
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{reminder.dueDate} <span className="mx-1 opacity-30">|</span> {reminder.dueTime}</span>
                       </div>
                     </div>
                     <button 
                       onClick={() => {
-                        if (window.confirm('Delete protocol?')) onDelete(reminder.id!);
+                        if (window.confirm('Terminate protocol?')) onDelete(reminder.id!);
                       }}
-                      className="p-1 text-slate-600 hover:text-red-400 transition-colors"
+                      className="p-2 text-slate-600 hover:text-rose-500 transition-colors shrink-0"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 </div>
@@ -523,37 +541,42 @@ const GridMatrix = ({ orders }: { orders: Order[] }) => {
   if (orders.length === 0) return <EmptyState />;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
       {orders.map((order, i) => (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.05 }}
           key={order.id}
-          className={`cockpit-card p-5 group cursor-pointer hover:border-sky-400/40 transition-all ${
+          className={`cockpit-card p-6 group cursor-pointer border-white/10 hover:border-sky-400/40 transition-all ${
             order.status === 'delivered' ? 'status-glow-green border-emerald-500/20' : 
             order.status === 'ready' ? 'status-glow-sky border-sky-500/30' :
             order.status === 'preparing' ? 'status-glow-amber border-amber-500/20' : ''
           }`}
         >
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black text-sky-400/60 uppercase tracking-widest">{order.time} | {order.warehouse}</span>
-            <div className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter border ${
+          <div className="flex justify-between items-start mb-6">
+            <span className="text-[11px] font-black text-sky-400/60 uppercase tracking-[0.1em] font-mono italic">
+              {order.time} <span className="text-white/10 px-1">/</span> {order.warehouse}
+            </span>
+            <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-colors ${
               order.status === 'delivered' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
               order.status === 'ready' ? 'bg-sky-500/10 text-sky-400 border-sky-500/20' :
-              'bg-slate-800 text-slate-400 border-slate-700'
+              order.status === 'preparing' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+              'bg-white/5 text-slate-500 border-white/10'
             }`}>
               {order.status}
             </div>
           </div>
-          <h4 className="text-white font-black text-lg mb-1 uppercase truncate">{order.customerName}</h4>
-          <p className="text-slate-400 text-[10px] font-bold mb-4 uppercase tracking-tight flex items-center gap-1">
-             <Trello size={10} className="text-sky-400" /> {order.destination}
+          <h4 className="text-white font-black text-xl mb-1 uppercase tracking-tighter italic truncate group-hover:text-sky-400 transition-colors">
+            {order.customerName}
+          </h4>
+          <p className="text-slate-400 text-[11px] font-black mb-6 uppercase tracking-widest flex items-center gap-2 opacity-70">
+             <Trello size={12} className="text-sky-400" /> {order.destination}
           </p>
-          <div className="h-px bg-white/5 mb-4" />
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] font-black text-white/40 uppercase">Load Type</span>
-            <span className="text-[10px] font-black text-white uppercase truncate max-w-[150px]">{order.items}</span>
+          <div className="h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent mb-6" />
+          <div className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">Inventory Matrix</span>
+            <span className="text-[11px] font-black text-sky-100 uppercase truncate max-w-[120px]">{order.items}</span>
           </div>
         </motion.div>
       ))}

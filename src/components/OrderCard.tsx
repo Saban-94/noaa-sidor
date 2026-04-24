@@ -32,19 +32,19 @@ import { highlightText, parseItems, isKnownProduct, cn } from '../lib/utils';
 
 export const StatusBadge = ({ status }: { status: Order['status'] }) => {
   const configs = {
-    pending: { color: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock, label: 'ממתין' },
-    preparing: { color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Truck, label: 'בהכנה' },
-    ready: { color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: CheckCircle2, label: 'מוכן' },
-    delivered: { color: 'bg-green-100 text-green-800 border-green-300', icon: CheckCircle, label: 'סופק' },
-    cancelled: { color: 'bg-rose-50 text-rose-700 border-rose-200', icon: AlertCircle, label: 'בוטל' },
+    pending: { color: 'bg-amber-500/10 text-amber-400 border-amber-400/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]', icon: Clock, label: 'PENDING' },
+    preparing: { color: 'bg-sky-500/10 text-sky-400 border-sky-400/20 shadow-[0_0_10px_rgba(14,165,233,0.2)]', icon: Truck, label: 'ENGAGED' },
+    ready: { color: 'bg-emerald-500/10 text-emerald-400 border-emerald-400/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]', icon: CheckCircle2, label: 'READY' },
+    delivered: { color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30 shadow-[0_0_15px_rgba(16,185,129,0.3)]', icon: CheckCircle, label: 'EXECUTED' },
+    cancelled: { color: 'bg-rose-500/10 text-rose-400 border-rose-400/20 shadow-[0_0_10px_rgba(244,63,94,0.2)]', icon: AlertCircle, label: 'ABORTED' },
   };
 
   const config = configs[status] || configs.pending;
   const Icon = config.icon;
 
   return (
-    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black border ${config.color} shadow-sm uppercase tracking-tight`}>
-      <Icon size={12} strokeWidth={3} />
+    <span className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[10px] font-black border backdrop-blur-md ${config.color} uppercase tracking-[0.1em] italic transition-all`}>
+      <Icon size={12} strokeWidth={3} className="animate-pulse" />
       {config.label}
     </span>
   );
@@ -114,73 +114,37 @@ const ItemsModal = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <table className="w-full text-right border-collapse">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-12 text-center">כמות</th>
-                <th className="py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4">תיאור פריט</th>
-                <th className="py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest w-24 text-left">מק"ט</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {parsedItems.map((item, idx) => (
-                <tr key={idx} className="group hover:bg-sky-50/50 transition-colors">
-                  <td className="py-4 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-900 text-white text-xs font-black shadow-sm group-hover:bg-sky-600 transition-colors">
-                      {item.quantity}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className={cn(
-                      "text-sm font-black leading-tight",
-                      isKnownProduct(item.name) ? "text-sky-600" : "text-gray-900"
-                    )}>
-                      {item.name}
-                    </p>
-                  </td>
-                  <td className="py-4 text-left">
-                    <div className="flex flex-col items-end gap-1">
-                      {item.sku ? (
-                        <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">
-                          {item.sku}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-gray-300 italic">לא צוין</span>
-                      )}
-                      
-                      {inventoryItems.find(inv => inv.sku === item.sku) && (
-                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${
-                          (inventoryItems.find(inv => inv.sku === item.sku)?.currentStock || 0) > 0 
-                            ? 'bg-emerald-50 text-emerald-600' 
-                            : 'bg-rose-50 text-rose-600'
-                        }`}>
-                          {(inventoryItems.find(inv => inv.sku === item.sku)?.currentStock || 0) > 0 ? 'במלאי' : 'חסר'}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {parsedItems.length === 0 && (
-            <div className="py-12 text-center">
-              <Package size={48} className="mx-auto text-gray-100 mb-4" />
-              <p className="text-gray-400 font-bold">אין פריטים להצגה</p>
-            </div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+          {parsedItems.length === 0 ? (
+            <p className="text-center text-slate-500 font-bold uppercase text-[10px] tracking-widest py-12">No inventory data found</p>
+          ) : (
+            parsedItems.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between p-5 bg-white/5 rounded-[1.5rem] border border-white/10 hover:border-sky-400/30 transition-all group">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl ${isKnownProduct(item.name) ? 'bg-sky-500/10 text-sky-400' : 'bg-slate-800 text-slate-500'} border border-white/5 group-hover:scale-110 transition-transform`}>
+                    <Package size={20} />
+                  </div>
+                  <div>
+                    <h5 className="text-white font-black text-sm uppercase tracking-tight">{item.name}</h5>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Matrix Verified</p>
+                  </div>
+                </div>
+                <div className="text-left">
+                  <span className="text-xl font-black text-sky-400 font-mono tracking-tighter italic">{item.quantity}</span>
+                  <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-1">Units</p>
+                </div>
+              </div>
+            ))
           )}
         </div>
 
-        <div className="p-6 bg-gray-50 border-t border-gray-100 text-center">
-          <p className="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest">סה"כ {parsedItems.length} שורות פריטים</p>
-          <button 
-            onClick={onClose}
-            className="w-full py-4 bg-white border border-gray-200 text-gray-600 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-gray-100 transition-all shadow-sm"
-          >
-            סיימתי לצפות
-          </button>
+        <div className="p-8 bg-slate-950/40 border-t border-white/10">
+           <button 
+             onClick={onClose}
+             className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-[1.5rem] font-black text-xs flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-95 uppercase tracking-[0.2em] italic"
+           >
+             Close Matrix View
+           </button>
         </div>
       </motion.div>
     </div>
@@ -224,7 +188,7 @@ const DocumentSheet = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl transition-opacity"
       />
       
       <motion.div
@@ -232,122 +196,131 @@ const DocumentSheet = ({
         animate={{ x: 0 }}
         exit={{ x: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="relative w-full max-w-sm bg-white shadow-2xl flex flex-col h-full ml-auto"
+        className="relative w-full max-w-sm glass-panel shadow-2xl flex flex-col h-full ml-auto border-l border-white/10"
       >
-        <div className="flex items-center justify-between p-6 border-bottom border-gray-100 bg-sky-50/30">
-          <div className="flex items-center gap-3">
-             <div className="p-2.5 bg-sky-600 text-white rounded-2xl shadow-lg ring-4 ring-sky-50">
-               <FileText size={20} />
+        <div className="flex items-center justify-between p-8 border-b border-white/10 bg-white/5">
+          <div className="flex items-center gap-4">
+             <div className="p-3 bg-sky-500/20 text-sky-400 rounded-2xl shadow-lg border border-sky-400/20">
+               <FileText size={24} />
              </div>
              <div>
-               <h2 className="text-xl font-black text-gray-900 leading-tight">ניהול מסמכים</h2>
-               <p className="text-[10px] font-bold text-sky-600 uppercase tracking-widest">הזמנה #{order.orderNumber || order.id?.slice(-4).toUpperCase()}</p>
+               <h2 className="text-xl font-black text-white leading-tight uppercase italic tracking-tighter">Intel Hub</h2>
+               <p className="text-[10px] font-black text-sky-400/60 uppercase tracking-widest mt-1">Order #{order.orderNumber || order.id?.slice(-4).toUpperCase()}</p>
              </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-white rounded-xl transition-all shadow-sm hover:shadow-md"
+            className="p-3 text-slate-500 hover:text-white hover:bg-white/10 rounded-2xl transition-all active:scale-90"
           >
-            <X size={20} />
+            <X size={24} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          {/* Error Message if any */}
+        <div className="flex-1 p-8 space-y-8 overflow-y-auto custom-scrollbar">
           <AnimatePresence>
             {uploadError && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3"
+                className="flex items-center gap-4 p-5 bg-rose-500/10 border border-rose-500/20 rounded-2xl mb-6 shadow-inner"
               >
-                <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={18} />
-                <div className="flex-1">
-                  <p className="text-xs font-black text-rose-700">שגיאה בהעלאה</p>
-                  <p className="text-[10px] font-bold text-rose-500 mt-0.5">{uploadError}</p>
+                <div className="p-2 bg-rose-500/20 rounded-xl">
+                  <AlertCircle size={20} className="text-rose-400" />
                 </div>
-                <button onClick={() => setUploadError(null)} className="text-rose-400 hover:text-rose-600">
-                  <X size={14} />
+                <div className="flex-1">
+                  <p className="text-xs font-black text-rose-400 uppercase tracking-widest italic">Uplink Failure</p>
+                  <p className="text-[10px] font-bold text-rose-300 mt-1">{uploadError}</p>
+                </div>
+                <button onClick={() => setUploadError(null)} className="p-1 hover:bg-rose-500/10 rounded-lg text-rose-400 transition-colors">
+                  <X size={16} />
                 </button>
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Order Details Summary */}
-          <div className="p-4 bg-gray-50 rounded-[1.5rem] border border-gray-100 flex flex-col gap-1">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">לקוח</span>
-            <p className="text-base font-black text-gray-900">{order.customerName}</p>
-            <p className="text-xs font-bold text-gray-500">{order.destination}</p>
+          <div className="p-6 bg-white/5 rounded-[2rem] border border-white/5 flex flex-col gap-1.5 shadow-xl">
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] italic">Mission Target / Registry</span>
+            <p className="text-xl font-black text-white uppercase italic tracking-tighter">{order.customerName}</p>
+            <div className="flex items-center gap-2 mt-1">
+               <Truck size={12} className="text-sky-400" />
+               <p className="text-xs font-bold text-slate-400 italic">{order.destination}</p>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
-              <Paperclip size={16} className="text-sky-500" />
-              קבצים מצורפים
-            </h3>
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-white flex items-center gap-3 uppercase tracking-widest italic">
+                <Paperclip size={18} className="text-sky-400" />
+                Attached Intel
+              </h3>
+              <span className="text-[9px] font-black text-sky-400 px-2 py-0.5 bg-sky-500/10 rounded border border-sky-400/10">SECURE</span>
+            </div>
 
             {/* Document Types */}
             {[
-              { id: order.orderFormId, type: 'orderForm', label: 'טופס הזמנה', themeColor: 'sky' },
-              { id: order.deliveryNoteId, type: 'deliveryNote', label: 'תעודת משלוח', themeColor: 'emerald' }
+              { id: order.orderFormId, type: 'orderForm', label: 'Mission Specs', themeColor: 'sky' },
+              { id: order.deliveryNoteId, type: 'deliveryNote', label: 'Transit Log', themeColor: 'emerald' }
             ].map((doc) => (
               <div key={doc.type} className="group relative">
-                <div className={`p-5 rounded-[2rem] border transition-all duration-300 ${
+                <div className={`p-6 rounded-[2.5rem] border transition-all duration-500 ${
                   doc.id ? 
-                  `bg-white border-${doc.themeColor}-100 shadow-md` : 
-                  'bg-gray-50 border-dashed border-gray-200 opacity-80'
+                  `bg-white/5 border-white/10 shadow-2xl` : 
+                  'bg-slate-950/20 border-dashed border-white/5 opacity-80'
                 }`}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-2xl ${
-                        doc.id ? `bg-${doc.themeColor}-100 text-${doc.themeColor}-600` : 'bg-gray-200 text-gray-400'
-                      }`}>
-                        <FileText size={24} />
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-4 rounded-2xl ${
+                        doc.id ? `bg-${doc.themeColor}-500/10 text-${doc.themeColor}-400` : 'bg-slate-800 text-slate-600'
+                      } border border-white/5 shadow-inner`}>
+                        <FileText size={28} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-black text-gray-900">{doc.label}</h4>
-                        <p className="text-[10px] font-bold text-gray-400">PDF Document</p>
+                        <h4 className="text-sm font-black text-white uppercase tracking-tighter italic">{doc.label}</h4>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Encrypted PDF Matrix</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     {doc.id ? (
                       isPending(doc.id) ? (
-                        <div className={`flex items-center gap-3 p-3 bg-${doc.themeColor}-50/50 rounded-2xl border border-${doc.themeColor}-100 animate-pulse`}>
-                          <Loader2 size={16} className="animate-spin text-sky-600" />
-                          <span className={`text-xs font-bold text-${doc.themeColor}-700`}>מעבד את המסמך...</span>
+                        <div className={`flex items-center gap-4 p-4 bg-sky-500/10 rounded-2xl border border-sky-400/20 animate-pulse shadow-inner`}>
+                          <Loader2 size={18} className="animate-spin text-sky-400" />
+                          <span className={`text-xs font-black text-sky-400 uppercase tracking-widest italic`}>Decrypting Intel Data...</span>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                           <a 
-                            href={getDriveUrl(doc.id)}
+                            href={getDriveUrl(doc.id!)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 bg-${doc.themeColor}-600 text-white rounded-2xl font-black text-xs shadow-lg shadow-${doc.themeColor}-600/20 hover:scale-[1.02] active:scale-95 transition-all`}
+                            className={`flex-1 glass-button flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all !text-[11px]`}
                           >
-                            <ExternalLink size={14} /> צפייה בקובץ
+                            <ExternalLink size={16} /> Open Data Stream
                           </a>
                         </div>
                       )
                     ) : (
-                      <p className="text-[11px] font-bold text-gray-400 italic bg-gray-100/50 p-3 rounded-xl border border-gray-200">אין מסמך מצורף להזמנה זו</p>
+                      <div className="p-4 rounded-xl border border-white/5 bg-slate-950/40 text-center">
+                        <p className="text-[10px] font-bold text-slate-600 italic uppercase tracking-[0.1em]">No data records attached to this mission</p>
+                      </div>
                     )}
 
-                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest decoration-sky-500 decoration-2 underline-offset-4 decoration-dotted">עדכון קובץ</span>
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all cursor-pointer shadow-sm ${
+                    <div className="pt-4 mt-2 border-t border-white/5 flex items-center justify-between">
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] italic">Data Uplink</span>
+                      <label className={`flex items-center gap-3 px-5 py-2.5 rounded-xl border transition-all cursor-pointer shadow-lg active:scale-95 ${
                         isUploading === doc.type ? 
-                        `bg-${doc.themeColor}-50 border-${doc.themeColor}-200` : 
-                        'bg-white border-gray-100 hover:border-sky-300 hover:bg-sky-50 text-sky-600'
+                        `bg-sky-500/20 border-sky-400/40 text-sky-400` : 
+                        'bg-white/5 border-white/10 text-sky-400 hover:bg-white/10 hover:border-white/20'
                       }`}>
                         {isUploading === doc.type ? (
-                          <Loader2 size={16} className="animate-spin" />
+                          <Loader2 size={18} className="animate-spin" />
                         ) : (
                           <>
-                            <FileUp size={14} />
-                            <span className="text-[10px] font-black">העלה חדש</span>
+                            <FileUp size={16} />
+                            <span className="text-[10px] font-black uppercase tracking-widest italic">New Upload</span>
                           </>
                         )}
                         <input 
@@ -366,12 +339,12 @@ const DocumentSheet = ({
           </div>
         </div>
 
-        <div className="p-6 bg-gray-50 border-t border-gray-100">
+        <div className="p-8 bg-slate-950/40 border-t border-white/10">
            <button 
              onClick={onClose}
-             className="w-full py-4 bg-white border border-gray-200 text-gray-600 rounded-[1.5rem] font-black text-sm flex items-center justify-center gap-2 hover:bg-gray-100 transition-all hover:shadow-md"
+             className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-[1.5rem] font-black text-xs flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-95 uppercase tracking-[0.2em] italic"
            >
-             סגור תצוגה
+             Terminate Connection
            </button>
         </div>
       </motion.div>
@@ -469,53 +442,53 @@ export const OrderCard = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "bg-white/95 backdrop-blur-sm rounded-[2rem] border border-sky-100 shadow-lg hover:shadow-xl transition-all relative group",
-        isCompact ? "p-4" : "p-5"
+        "cockpit-card border-white/10 hover:border-sky-400/40 hover:shadow-2xl hover:shadow-sky-500/10 transition-all transition-duration-500 relative group overflow-hidden",
+        isCompact ? "p-6" : "p-8"
       )}
     >
       <div className={cn(
-        "absolute bg-gray-900 text-white px-3 py-1 rounded-full text-[10px] font-black z-10 shadow-lg",
-        isCompact ? "top-2 left-2" : "top-4 left-4"
+        "absolute bg-slate-950/80 text-sky-100 px-4 py-1.5 rounded-xl text-[10px] font-black z-10 shadow-lg border border-white/10 font-mono uppercase tracking-[0.2em] italic",
+        isCompact ? "top-3 left-3" : "top-6 left-6"
       )}>
-        #{order.orderNumber || order.id?.slice(-4).toUpperCase()}
+        {order.orderNumber || order.id?.slice(-4).toUpperCase()}
       </div>
 
       {!isCompact && (
-        <div className="absolute top-4 left-24 z-10 flex gap-2">
+        <div className="absolute top-6 left-32 z-10 flex gap-3">
           {onUploadDoc && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {(order.orderFormId || order.deliveryNoteId) ? (
                 <button 
                   onClick={() => setShowDocs(!showDocs)}
                   disabled={order.orderFormId === 'PENDING_SCAN' || order.deliveryNoteId === 'PENDING_SCAN'}
-                  className={`p-1.5 rounded-full shadow-lg border transition-all ${
-                    showDocs ? 'bg-sky-600 text-white border-sky-600' : 
-                    (order.orderFormId === 'PENDING_SCAN' || order.deliveryNoteId === 'PENDING_SCAN') ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed' :
-                    'bg-white text-sky-600 border-sky-100 hover:bg-sky-50'
+                  className={`p-2 rounded-xl shadow-xl border transition-all active:scale-90 ${
+                    showDocs ? 'bg-sky-500 text-white border-sky-400' : 
+                    (order.orderFormId === 'PENDING_SCAN' || order.deliveryNoteId === 'PENDING_SCAN') ? 'bg-slate-800 text-slate-600 border-white/5 cursor-not-allowed' :
+                    'bg-slate-900/60 text-sky-400 border-white/10 hover:bg-white/10'
                   }`}
-                  title={order.orderFormId === 'PENDING_SCAN' || order.deliveryNoteId === 'PENDING_SCAN' ? "מעבד מסמכים..." : "צפה במסמכים"}
+                  title={order.orderFormId === 'PENDING_SCAN' || order.deliveryNoteId === 'PENDING_SCAN' ? "Processing Intel..." : "Visual Insight"}
                 >
                   {order.orderFormId === 'PENDING_SCAN' || order.deliveryNoteId === 'PENDING_SCAN' ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    <Eye size={14} strokeWidth={3} />
+                    <Eye size={16} strokeWidth={3} />
                   )}
                 </button>
               ) : (
                 <label 
-                  className={`p-1.5 rounded-full shadow-lg border transition-all cursor-pointer ${
-                    isLocalUploading ? 'bg-sky-50 border-sky-200 text-sky-400' : 
-                    uploadError ? 'bg-rose-50 border-rose-300 text-rose-500 animate-shake' : 
-                    'bg-white text-sky-600 border-sky-100 hover:bg-sky-50'
+                  className={`p-2 rounded-xl shadow-xl border transition-all cursor-pointer active:scale-90 ${
+                    isLocalUploading ? 'bg-sky-500/20 border-sky-400/40 text-sky-400' : 
+                    uploadError ? 'bg-rose-500/20 border-rose-400/40 text-rose-500 animate-shake' : 
+                    'bg-slate-900/60 text-sky-400 border-white/10 hover:bg-white/10'
                   }`}
-                  title={uploadError ? "שגיאה בהעלאה" : "העלאת מסמך מהיר"}
+                  title={uploadError ? "Transmission Failure" : "Data Uplink"}
                 >
                   {isLocalUploading ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={16} className="animate-spin" />
                   ) : uploadError ? (
-                    <AlertCircle size={14} strokeWidth={3} />
+                    <AlertCircle size={16} strokeWidth={3} />
                   ) : (
-                    <FileUp size={14} strokeWidth={3} />
+                    <FileUp size={16} strokeWidth={3} />
                   )}
                   <input 
                     type="file" 
@@ -542,60 +515,65 @@ export const OrderCard = ({
       )}
 
       <div className={cn(
-        "flex gap-4 pt-2",
-        isCompact ? "mb-4" : "mb-6"
+        "flex gap-6 pt-4",
+        isCompact ? "mb-6" : "mb-8 text-right"
       )}>
         <div className={cn(
-          "rounded-3xl h-fit border shadow-sm flex items-center justify-center",
-          driver?.vehicleType === 'crane' ? 'bg-sky-50 text-sky-600 border-sky-100' : 'bg-blue-50 text-blue-600 border-blue-100',
-          isCompact ? "p-2.5" : "p-4"
+          "rounded-[2rem] h-fit border flex items-center justify-center relative transition-shadow",
+          driver?.vehicleType === 'crane' ? 'bg-sky-500/10 text-sky-400 border-sky-400/30' : 'bg-blue-500/10 text-blue-400 border-blue-400/30',
+          isCompact ? "p-4" : "p-6 shadow-[0_0_20px_rgba(14,165,233,0.15)]"
         )}>
-          <Truck size={isCompact ? 20 : 28} strokeWidth={2.5} />
+          <Truck size={isCompact ? 24 : 36} strokeWidth={2.5} className="relative z-10" />
+          <div className="absolute inset-0 bg-sky-400 blur-2xl opacity-10 rounded-full" />
         </div>
-        <div className="flex-1 min-w-0 text-right">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
           <h3 className={cn(
-            "font-black text-gray-900 leading-tight mb-1 truncate",
-            isCompact ? "text-base" : "text-xl"
+            "font-black text-white leading-tight mb-2 truncate uppercase tracking-tighter italic",
+            isCompact ? "text-xl" : "text-3xl"
           )}>
             {highlightText(order.customerName, searchQuery)}
           </h3>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[10px] text-gray-400 font-bold flex items-center gap-1">
-               <Info size={10} /> {highlightText(order.destination, searchQuery)}
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-[11px] text-slate-400 font-black uppercase tracking-[0.1em] flex items-center gap-2 italic">
+               <Info size={12} className="text-sky-400" /> {highlightText(order.destination, searchQuery)}
             </p>
           </div>
         </div>
       </div>
 
       <div className={cn(
-        "flex items-center justify-between bg-sky-50/50 rounded-2xl border border-sky-50/50",
-        isCompact ? "p-3 mb-4" : "p-4 mb-6"
-      )}>
-        <div className="flex flex-col gap-1 text-right">
-          {!isCompact && <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">נהג וזמן</span>}
-          <div className="flex items-center gap-2">
+        "flex items-center justify-between bg-white/5 rounded-[1.5rem] border border-white/5",
+        isCompact ? "p-4 mb-6" : "p-6 mb-8"
+      )} dir="rtl">
+        <div className="flex flex-col gap-1.5">
+          {!isCompact && <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] italic pr-1">Fleet / ETA</span>}
+          <div className="flex items-center gap-3">
             {order.driverId === 'self' ? (
-              <span className={cn("font-black text-gray-900", isCompact ? "text-xs" : "text-sm")}>איסוף עצמי</span>
+              <span className={cn("font-black text-white uppercase italic", isCompact ? "text-sm" : "text-base")}>Direct Retrieval</span>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {driver?.avatar ? (
-                  <img 
-                    src={driver.avatar} 
-                    alt={driver.name} 
-                    className={cn("rounded-full object-cover border-2 border-white shadow-sm", isCompact ? "w-5 h-5" : "w-7 h-7")}
-                    referrerPolicy="no-referrer"
-                  />
+                  <div className="relative group">
+                    <img 
+                      src={driver.avatar} 
+                      alt={driver.name} 
+                      className={cn("rounded-full object-cover border-2 border-sky-400/30 shadow-lg", isCompact ? "w-6 h-6" : "w-10 h-10")}
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-sky-400 rounded-full blur-md opacity-0 group-hover:opacity-30 transition-opacity" />
+                  </div>
                 ) : (
-                  <div className={cn("rounded-full bg-sky-100 flex items-center justify-center border-2 border-white shadow-sm text-sky-600", isCompact ? "w-5 h-5" : "w-7 h-7")}>
-                    <User size={isCompact ? 10 : 14} />
+                  <div className={cn("rounded-full bg-slate-800 flex items-center justify-center border-2 border-white/10 shadow-lg text-sky-400", isCompact ? "w-6 h-6" : "w-10 h-10")}>
+                    <User size={isCompact ? 12 : 20} />
                   </div>
                 )}
-                <span className={cn("font-black text-gray-900 leading-tight", isCompact ? "text-xs" : "text-sm")}>
+                <span className={cn("font-black text-white leading-tight uppercase italic truncate max-w-[100px]", isCompact ? "text-sm" : "text-base")}>
                   {driver?.name.split(' ')[0]}
                 </span>
               </div>
             )}
-            <span className={cn("font-black text-sky-600 self-center mr-1", isCompact ? "text-xs" : "text-sm")}>| {order.time}</span>
+            <div className="h-4 w-[1px] bg-white/10 mx-1" />
+            <span className={cn("font-black text-sky-400 font-mono tracking-tighter italic", isCompact ? "text-sm" : "text-xl")}>{order.time}</span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-1">
