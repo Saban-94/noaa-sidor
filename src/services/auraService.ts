@@ -14,7 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Order, Driver, Customer, Reminder } from '../types';
-
+import { GoogleGenerativeAI } from "@google/generative-ai";
 interface FirestoreErrorInfo {
   error: string;
   operationType: 'create' | 'update' | 'delete' | 'list' | 'get' | 'write';
@@ -75,7 +75,7 @@ const sanitizeForVoice = (text: string): string => {
 
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY});
 
 // Helper to call Gemini API directly
 async function callGeminiApi(payload: { model: string, contents: any[], config?: any }) {
